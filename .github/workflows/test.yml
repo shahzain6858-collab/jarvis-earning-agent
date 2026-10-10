@@ -1,0 +1,22 @@
+name: Test JARVIS
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get repository code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Check Python syntax
+        run: python -m py_compile main.py
+
+      - name: Check CSV file
+        run: python -c "import csv; f=open('leads.csv', newline='', encoding='utf-8'); print('CSV rows:', sum(1 for _ in csv.DictReader(f)))"
