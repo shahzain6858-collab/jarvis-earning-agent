@@ -86,7 +86,7 @@ def main():
         print("2. View saved clients")
         print("3. Draft a personalized offer")
         print("4. Exit")
-
+print("5. View CSV leads")
         choice = input("Select 1-4: ").strip()
 
         if choice == "1":
