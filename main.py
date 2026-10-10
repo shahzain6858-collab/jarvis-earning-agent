@@ -88,7 +88,6 @@ def main():
         print("4. Exit")
 print("5. View CSV leads")
         choice = input("Select 1-4: ").strip()
-
         if choice == "1":
             add_lead(leads)
         elif choice == "2":
