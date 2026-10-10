@@ -1,80 +1,24 @@
 
-"""
-JARVIS Earning Agent - Version 1
-A lightweight, zero-API-cost lead organizer.
-"""
-
-import json
+import csv
 from pathlib import Path
 from datetime import datetime
 
-DATA_FILE = Path("leads.json")
+FILE = Path("leads.csv")
+FIELDS = ["business", "service", "contact", "status", "created_at"]
 
 
 def load_leads():
-    if DATA_FILE.exists():
-        try:
-            return json.loads(DATA_FILE.read_text(encoding="utf-8"))
-        except (json.JSONDecodeError, OSError):
-            return []
-    return []
+    if not FILE.exists():
+        return []
+    with FILE.open("r", newline="", encoding="utf-8") as f:
+        return list(csv.DictReader(f))
 
 
 def save_leads(leads):
-    DATA_FILE.write_text(
-        json.dumps(leads, indent=2, ensure_ascii=False),
-        encoding="utf-8"
-    )
-
-
-def add_lead(leads):
-    print("\n--- Add Potential Client ---")
-    name = input("Business name: ").strip()
-    service = input("Service they may need: ").strip()
-    contact = input("Public business contact or website: ").strip()
-
-    if not name or not service:
-        print("Business name and service are required.")
-        return
-
-    leads.append({
-        "business": name,
-        "service": service,
-        "contact": contact,
-        "status": "new",
-        "created_at": datetime.now().isoformat(timespec="minutes")
-    })
-    save_leads(leads)
-    print("Lead saved successfully!")
-
-
-def draft_offer(leads):
-    if not leads:
-        print("No leads yet. Add a lead first.")
-        return
-
-    for i, lead in enumerate(leads, start=1):
-        print(f"{i}. {lead['business']} — {lead['service']}")
-
-    try:
-        number = int(input("Choose lead number: "))
-        lead = leads[number - 1]
-        if number < 1:
-            raise ValueError
-    except (ValueError, IndexError):
-        print("Invalid selection.")
-        return
-
-    message = (
-        f"Hello {lead['business']} team! I came across your business "
-        f"and wanted to introduce my {lead['service']} service. "
-        "I can prepare a small sample for you to review, with no "
-        "obligation. Would you be interested? Thank you!"
-    )
-
-    print("\n--- Draft only: review before sending ---\n")
-    print(message)
-    print("\nNo message has been sent.")
+    with FILE.open("w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=FIELDS)
+        writer.writeheader()
+        writer.writerows(leads)
 
 
 def main():
@@ -82,52 +26,83 @@ def main():
 
     while True:
         print("\n===== JARVIS v1 =====")
-        print("1. Add a potential client")
+        print("1. Add potential client")
         print("2. View saved clients")
-        print("3. Draft a personalized offer")
-        print("4. Exit")
-print("5. View CSV leads")
-        choice = input("Select 1-4: ").strip()
+        print("3. Draft an offer")
+        print("4. View CSV leads")
+        print("5. Exit")
+
+        choice = input("Choose 1-5: ").strip()
+
         if choice == "1":
-            add_lead(leads)
+            business = input("Business name: ").strip()
+            service = input("Service to offer: ").strip()
+            contact = input("Public contact or website: ").strip()
+
+            if business and service:
+                leads.append({
+                    "business": business,
+                    "service": service,
+                    "contact": contact,
+                    "status": "new",
+                    "created_at": datetime.now().isoformat(
+                        timespec="minutes"
+                    )
+                })
+                save_leads(leads)
+                print("Lead saved!")
+            else:
+                print("Business name and service are required.")
+
         elif choice == "2":
             if not leads:
                 print("No clients saved yet.")
-            else:
-                for lead in leads:
-                    print(
-                        f"- {lead['business']} | {lead['service']} "
-                        f"| Status: {lead['status']}"
-                    )
+            for lead in leads:
+                print(
+                    lead["business"], "|",
+                    lead["service"], "|",
+                    lead["status"]
+                )
+
         elif choice == "3":
-            draft_offer(leads)
+            if not leads:
+                print("Add a client first.")
+                continue
+
+            for i, lead in enumerate(leads, start=1):
+                print(i, lead["business"], "-", lead["service"])
+
+            try:
+                number = int(input("Choose client number: "))
+                lead = leads[number - 1]
+                if number < 1:
+                    raise ValueError
+            except (ValueError, IndexError):
+                print("Invalid number.")
+                continue
+
+            print("\n--- Draft only; not sent ---")
+            print(
+                f"Hello {lead['business']} team! "
+                f"I offer {lead['service']} services. "
+                "Would you be interested in seeing a sample? "
+                "Thank you!"
+            )
+
         elif choice == "4":
-            print("JARVIS shutting down. Goodbye!")
+            if FILE.exists():
+                print(FILE.read_text(encoding="utf-8"))
+            else:
+                print("No CSV file yet. Add a client first.")
+
+        elif choice == "5":
+            print("JARVIS closed.")
             break
-elif choice == "5":
-    read_csv_leads()
-else:
-    print("Please choose 1, 2, 3, 4, or 5.")
+
+        else:
+            print("Please choose 1, 2, 3, 4, or 5.")
+
 
 if __name__ == "__main__":
     main()
-import csv
-from pathlib import Path
 
-def read_csv_leads():
-    file_path = Path("leads.csv")
-
-    if not file_path.exists():
-        print("leads.csv file not found.")
-        return
-
-    with file_path.open("r", encoding="utf-8", newline="") as file:
-        reader = csv.DictReader(file)
-        for lead in reader:
-            print(
-                lead.get("business", ""),
-                "|",
-                lead.get("service", ""),
-                "|",
-                lead.get("status", "")
-            )
