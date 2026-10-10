@@ -111,3 +111,23 @@ def main():
 
 if __name__ == "__main__":
     main()
+import csv
+from pathlib import Path
+
+def read_csv_leads():
+    file_path = Path("leads.csv")
+
+    if not file_path.exists():
+        print("leads.csv file not found.")
+        return
+
+    with file_path.open("r", encoding="utf-8", newline="") as file:
+        reader = csv.DictReader(file)
+        for lead in reader:
+            print(
+                lead.get("business", ""),
+                "|",
+                lead.get("service", ""),
+                "|",
+                lead.get("status", "")
+            )
