@@ -105,9 +105,10 @@ print("5. View CSV leads")
         elif choice == "4":
             print("JARVIS shutting down. Goodbye!")
             break
-        else:
-            print("Please choose 1, 2, 3, or 4.")
-
+elif choice == "5":
+    read_csv_leads()
+else:
+    print("Please choose 1, 2, 3, 4, or 5.")
 
 if __name__ == "__main__":
     main()
